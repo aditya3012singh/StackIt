@@ -12,7 +12,7 @@ import {
   Zap,
 } from "lucide-react";
 
-const Login: React.FC = () => {
+const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,12 +23,7 @@ const Login: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Navigate to home page after successful login
-      navigate("/");
-    }, 1500);
+    navigate("/login");
   };
 
   const containerVariants = {
@@ -91,7 +86,7 @@ const Login: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Welcome back!
+            Join StackIt
           </motion.h1>
           <motion.p
             className="text-gray-600"
@@ -99,7 +94,7 @@ const Login: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Sign in to continue your learning journey
+            Start your collaborative learning adventure
           </motion.p>
         </div>
 
@@ -204,7 +199,7 @@ const Login: React.FC = () => {
               ) : (
                 <>
                   <Zap className="mr-2" size={20} />
-                  Sign In
+                  Create Account
                 </>
               )}
             </motion.button>
@@ -246,12 +241,12 @@ const Login: React.FC = () => {
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Don't have an account?{" "}
+              Already have an account?{" "}
               <Link
-                to="/register"
+                to="/login"
                 className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
-                Sign up
+                Sign in
               </Link>
             </p>
           </div>
@@ -284,4 +279,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Register;
