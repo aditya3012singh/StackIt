@@ -17,7 +17,10 @@ const Profile: React.FC = () => {
   const [showEdit, setShowEdit] = useState(false);
 
   const userQuestions = questions.filter((q) => q.author.id === currentUser.id);
-  const userAnswers = currentUser.answers;
+
+  // ✅ FIXED: replaced currentUser.answers with correct logic
+  const userAnswers = questions
+    .flatMap((q) => q.answers?.filter((a) => a.author.id === currentUser.id) || []);
 
   const stats = [
     { label: 'Total XP', value: currentUser.xp, icon: Star, color: 'text-yellow-500' },
@@ -39,7 +42,6 @@ const Profile: React.FC = () => {
       {/* Profile Header */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          {/* Avatar and Basic Info */}
           <div className="flex items-center gap-6">
             <img
               src={currentUser.avatar}
@@ -61,8 +63,6 @@ const Profile: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* XP Progress */}
           <div className="flex-1 md:ml-auto">
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
@@ -83,8 +83,6 @@ const Profile: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Edit Profile Button */}
         <div className="flex justify-end">
           <button
             onClick={() => setShowEdit(true)}
@@ -95,7 +93,6 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -110,7 +107,6 @@ const Profile: React.FC = () => {
         ))}
       </div>
 
-      {/* Tabs */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
@@ -137,11 +133,9 @@ const Profile: React.FC = () => {
         </div>
 
         <div className="p-6">
-          {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Recent Activity */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
                   <div className="space-y-3">
@@ -169,7 +163,6 @@ const Profile: React.FC = () => {
                   </div>
                 </div>
 
-                {/* XP Growth Placeholder */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">XP Growth</h3>
                   <div className="bg-gray-50 rounded-lg p-4 h-48 flex items-center justify-center">
@@ -180,7 +173,6 @@ const Profile: React.FC = () => {
             </div>
           )}
 
-          {/* Questions Tab */}
           {activeTab === 'questions' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -216,7 +208,6 @@ const Profile: React.FC = () => {
             </div>
           )}
 
-          {/* Answers Tab */}
           {activeTab === 'answers' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -248,7 +239,6 @@ const Profile: React.FC = () => {
             </div>
           )}
 
-          {/* Achievements Tab */}
           {activeTab === 'achievements' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -299,7 +289,6 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
       {showEdit && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white rounded-lg w-full max-w-md p-6 relative">
