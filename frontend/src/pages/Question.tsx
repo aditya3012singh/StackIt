@@ -63,6 +63,7 @@ const Question: React.FC = () => {
     question.answers.push(newAnswer);
     setAnswer("");
     setShowAnswerForm(false);
+    toast.success("Answer posted successfully");
   };
 
   const handleVote = (answerId: string, type: "up" | "down") => {
@@ -75,17 +76,20 @@ const Question: React.FC = () => {
       return toast.error("You already voted on this answer");
     }
 
-    if (type === "up") answer.votes++;
-    else answer.votes--;
+    if (type === "up") {
+      answer.votes++;
+      toast.success("Upvoted successfully");
+    } else {
+      answer.votes--;
+      toast.success("Downvoted successfully");
+    }
 
     answer.voters.push(user.id);
   };
 
   const handleDeleteQuestion = () => {
     if (window.confirm("Are you sure you want to delete this question?")) {
-    
       // Deleting question API
-
       toast.success("Question deleted");
     }
   };

@@ -6,8 +6,8 @@ interface Props {
 }
 
 const ProtectedRoute: React.FC<Props> = () => {
-  // const isAuthenticated = !!localStorage.getItem('token');
-  const isAuthenticated = true;
+  const isAuthenticated = !!localStorage.getItem('token');
+  // const isAuthenticated = true;
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
