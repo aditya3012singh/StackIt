@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   Search,
   MessageSquare,
@@ -10,9 +10,10 @@ import {
   Menu,
   X,
   LogOut,
-} from 'lucide-react';
-import Notifications from './Notifications';
-import { currentUser } from '../utils/data';
+} from "lucide-react";
+import Notifications from "./Notifications";
+import { currentUser } from "../utils/data";
+import handle from "./Logout.tsx"
 
 const Layout: React.FC = () => {
   const location = useLocation();
@@ -28,10 +29,10 @@ const Layout: React.FC = () => {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/ask', label: 'Ask', icon: Plus },
-    { path: '/chat', label: 'Chat', icon: MessageSquare },
-    { path: '/profile', label: 'Profile', icon: User },
+    { path: "/", label: "Home", icon: Home },
+    { path: "/ask", label: "Ask", icon: Plus },
+    { path: "/chat", label: "Chat", icon: MessageSquare },
+    { path: "/profile", label: "Profile", icon: User },
   ];
 
   const handleLogout = () => {
@@ -81,8 +82,8 @@ const Layout: React.FC = () => {
                   to={path}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive(path)
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
                   <Icon size={18} />
@@ -136,12 +137,10 @@ const Layout: React.FC = () => {
                         <User size={16} />
                         <span>Profile</span>
                       </Link>
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          handleLogout();
-                        }}
-                        className="w-full text-left flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                      <Link
+                        to="/login"
+                        onClick={() => Logout()}
+                        className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                       >
                         <LogOut size={16} />
                         <span>Sign Out</span>
@@ -162,29 +161,27 @@ const Layout: React.FC = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <div
-            className={`md:hidden transition-all duration-300 ease-in-out ${
-              mobileMenuOpen ? 'max-h-screen py-4' : 'max-h-0 overflow-hidden'
-            } border-t border-gray-200`}
-          >
-            <nav className="flex flex-col space-y-2">
-              {navItems.map(({ path, label, icon: Icon }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(path)
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span>{label}</span>
-                </Link>
-              ))}
-            </nav>
-          </div>
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 py-4">
+              <nav className="flex flex-col space-y-2">
+                {navItems.map(({ path, label, icon: Icon }) => (
+                  <Link
+                    key={path}
+                    to={path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive(path)
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon size={18} />
+                    <span>{label}</span>
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
