@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Search,
   MessageSquare,
@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import Notifications from "./Notifications";
 import { currentUser } from "../utils/data";
-import handle from "./Logout.tsx"
 
 const Layout: React.FC = () => {
   const location = useLocation();
@@ -37,8 +36,8 @@ const Layout: React.FC = () => {
 
   const handleLogout = () => {
     // Clear auth data here if needed
-    localStorage.removeItem('user');
-    navigate('/login');
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   useEffect(() => {
@@ -56,8 +55,8 @@ const Layout: React.FC = () => {
         setShowUserMenu(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -139,12 +138,12 @@ const Layout: React.FC = () => {
                       </Link>
                       <Link
                         to="/login"
-                        onClick={() => Logout()}
+                        onClick={() => handleLogout}
                         className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                       >
                         <LogOut size={16} />
                         <span>Sign Out</span>
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 )}
