@@ -42,10 +42,12 @@ export interface Comment {
 
 export interface Notification {
   id: string;
-  type: 'answer' | 'comment' | 'vote' | 'badge';
+  type: 'answer' | 'comment' | 'vote' | 'badge' | 'mention' | 'chat' | 'tag';
   message: string;
   read: boolean;
   createdAt: string;
+  questionId?: string;
+  chatRoomId?: string;
 }
 
 export interface Achievement {
@@ -57,11 +59,19 @@ export interface Achievement {
   earnedAt?: string;
 }
 
+// ✅ Extended to support MCQ Polls in Chat
 export interface ChatMessage {
   id: string;
-  content: string;
-  author: User;
+  roomId: string;
+  senderId: string;
+  content: string; // For polls, this is the question
   timestamp: string;
+  type: 'text' | 'poll';
+  pollOptions?: {
+    id: string;
+    text: string;
+    votes: string[]; // userIds who voted
+  }[];
 }
 
 export interface ChatRoom {
@@ -77,4 +87,5 @@ export interface AuthContextType {
   setUser: (user: User | null) => void;
   isLoading: boolean;
   forceLogoutAndRedirect: () => void; // ✅ MUST be added
+  members: string[];
 }

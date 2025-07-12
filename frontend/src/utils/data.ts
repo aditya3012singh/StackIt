@@ -143,21 +143,38 @@ export const chatMessages: ChatMessage[] = [
     roomId: '1',
     senderId: '2',
     content: 'Hey, need help with React Router?',
-    timestamp: '2024-01-15T11:00:00Z'
+    timestamp: '2024-01-15T11:00:00Z',
+    type: 'text'
   },
   {
     id: '2',
     roomId: '1',
     senderId: '1',
     content: 'Sure! What issue are you facing?',
-    timestamp: '2024-01-15T11:01:00Z'
+    timestamp: '2024-01-15T11:01:00Z',
+    type: 'text'
   },
   {
     id: '3',
     roomId: '2',
     senderId: '3',
     content: 'Is there a way to infer prop types from data?',
-    timestamp: '2024-01-15T11:02:00Z'
+    timestamp: '2024-01-15T11:02:00Z',
+    type: 'text'
+  },
+  {
+    id: '4',
+    roomId: '1',
+    senderId: '1',
+    content: 'What is your favorite state management library?',
+    timestamp: '2024-01-15T12:00:00Z',
+    type: 'poll',
+    pollOptions: [
+      { id: 'opt1', text: 'Redux', votes: [] },
+      { id: 'opt2', text: 'Zustand', votes: [] },
+      { id: 'opt3', text: 'Recoil', votes: [] },
+      { id: 'opt4', text: 'Context API', votes: [] }
+    ]
   }
 ];
 

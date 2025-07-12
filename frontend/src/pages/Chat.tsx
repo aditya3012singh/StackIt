@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Send, Hash, Users, Search, Smile, PlusCircle, UserPlus, Share2, UserPlus2 } from 'lucide-react';
+import {
+  Send,
+  Hash,
+  Users,
+  Search,
+  Smile,
+  PlusCircle,
+  UserPlus,
+  Share2,
+  UserPlus2,
+} from 'lucide-react';
 import { chatRooms, chatMessages, currentUser } from '../utils/data';
 
 const Chat: React.FC = () => {
@@ -24,7 +34,7 @@ const Chat: React.FC = () => {
         id: Date.now().toString(),
         name: newGroupName,
         participants: 1,
-        lastMessage: null
+        lastMessage: null,
       };
       chatRooms.push(newRoom);
       setSelectedRoom(newRoom);
@@ -45,7 +55,7 @@ const Chat: React.FC = () => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -53,8 +63,9 @@ const Chat: React.FC = () => {
     <div className="h-[calc(100vh-8rem)] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="flex h-full">
         {/* Sidebar */}
-        <div className={`w-80 border-r border-gray-200 flex flex-col ${showRoomList ? 'block' : 'hidden'} lg:block`}>
-          {/* Sidebar Header */}
+        <div
+          className={`w-80 border-r border-gray-200 flex flex-col ${showRoomList ? 'block' : 'hidden'} lg:block`}
+        >
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Chat Rooms</h2>
@@ -66,7 +77,10 @@ const Chat: React.FC = () => {
               </button>
             </div>
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
               <input
                 type="text"
                 placeholder="Search rooms..."
@@ -75,10 +89,11 @@ const Chat: React.FC = () => {
             </div>
           </div>
 
-          {/* Room List */}
           <div className="flex-1 overflow-y-auto">
             {chatRooms.length === 0 ? (
-              <div className="p-6 text-center text-gray-500 text-sm">No groups yet. Create one to start chatting!</div>
+              <div className="p-6 text-center text-gray-500 text-sm">
+                No groups yet. Create one to start chatting!
+              </div>
             ) : (
               chatRooms.map((room) => (
                 <button
@@ -101,7 +116,8 @@ const Chat: React.FC = () => {
                   </div>
                   {room.lastMessage && (
                     <p className="text-sm text-gray-600 mt-2 truncate">
-                      <span className="font-medium">{room.lastMessage.author.username}:</span> {room.lastMessage.content}
+                      <span className="font-medium">{room.lastMessage.author.username}:</span>{' '}
+                      {room.lastMessage.content}
                     </p>
                   )}
                 </button>
@@ -112,7 +128,6 @@ const Chat: React.FC = () => {
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
-          {/* Chat Header */}
           <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -132,9 +147,7 @@ const Chat: React.FC = () => {
                 >
                   <Share2 size={16} /> {inviteLinkCopied ? 'Link Copied!' : 'Share'}
                 </button>
-                <button
-                  className="flex items-center gap-1 text-green-600 hover:underline"
-                >
+                <button className="flex items-center gap-1 text-green-600 hover:underline">
                   <UserPlus2 size={16} /> Add Member
                 </button>
                 <div className="flex items-center gap-1">
@@ -145,33 +158,68 @@ const Chat: React.FC = () => {
             </div>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {chatMessages.map((msg) => (
               <div key={msg.id} className="flex items-start gap-3">
-                <img
-                  src={msg.author.avatar}
-                  alt={msg.author.username}
-                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                />
+                {msg.author?.avatar ? (
+                  <img
+                    src={msg.author.avatar}
+                    alt={msg.author.username || 'User'}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-300 flex-shrink-0" />
+                )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-gray-900 text-sm">
-                      {msg.author.username}
+                      {msg.author?.username || 'Unknown'}
                     </span>
-                    <span className="text-xs text-gray-500">
-                      {formatTime(msg.timestamp)}
-                    </span>
+                    <span className="text-xs text-gray-500">{formatTime(msg.timestamp)}</span>
                   </div>
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {msg.content}
-                  </p>
+                  {msg.type === 'poll' && msg.poll ? (
+                    <div className="bg-gray-50 border rounded-lg p-3">
+                      <p className="font-medium mb-2 text-gray-900">{msg.poll.question}</p>
+                      <div className="space-y-2">
+                        {msg.poll.options.map((opt, index) => {
+                          const userVote = msg.poll!.votes[currentUser.id];
+                          const isSelected = userVote === index;
+                          const totalVotes = Object.keys(msg.poll.votes).length;
+                          const voteCount = Object.values(msg.poll.votes).filter(v => v === index).length;
+                          const percentage = totalVotes ? Math.round((voteCount / totalVotes) * 100) : 0;
+
+                          return (
+                            <button
+                              key={index}
+                              disabled={userVote !== undefined}
+                              onClick={() => {
+                                if (userVote === undefined) {
+                                  msg.poll!.votes[currentUser.id] = index;
+                                }
+                              }}
+                              className={`w-full px-3 py-2 border rounded-md text-left text-sm ${
+                                isSelected ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'
+                              }`}
+                            >
+                              <div className="flex justify-between items-center">
+                                <span>{opt}</span>
+                                {userVote !== undefined && (
+                                  <span className="text-xs text-gray-500">{percentage}% ({voteCount})</span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-700 text-sm leading-relaxed">{msg.content}</p>
+                  )}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Message Input */}
           <div className="p-4 border-t border-gray-200">
             <form onSubmit={handleSendMessage} className="flex items-end gap-3">
               <div className="flex-1">
@@ -205,14 +253,11 @@ const Chat: React.FC = () => {
                 <Send size={16} />
               </button>
             </form>
-            <p className="text-xs text-gray-500 mt-2">
-              Press Enter to send, Shift + Enter for new line
-            </p>
+            <p className="text-xs text-gray-500 mt-2">Press Enter to send, Shift + Enter for new line</p>
           </div>
         </div>
       </div>
 
-      {/* Group creation modal */}
       {isCreatingGroup && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">

@@ -1,7 +1,5 @@
-// Home.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, TrendingUp, Clock, Eye, ArrowUp, MessageSquare,
   Users, Zap, BookOpen, Award, ChevronRight, Star, Plus, Sun, Moon
@@ -53,7 +51,7 @@ const Home = () => {
 
   return (
     <div className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} relative min-h-screen`}>
-      {/* ✅ Theme Toggle */}
+      {/* Theme Toggle */}
       <div className="fixed top-4 right-4 z-50">
         <button
           onClick={() => setDarkMode(!darkMode)}
@@ -63,7 +61,7 @@ const Home = () => {
         </button>
       </div>
 
-      {/* ✅ HERO section */}
+      {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl mt-8">
         <div className="px-6 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
@@ -114,7 +112,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ✅ Filter Tabs */}
+      {/* ✅ Filter Tabs - Fully Covered Toggle */}
       <div className="flex flex-wrap justify-center gap-3 mt-10">
         {filters.map(filter => (
           <button
@@ -123,17 +121,22 @@ const Home = () => {
               setActiveFilter(filter.key);
               setPage(1);
             }}
-            className={`px-4 py-2 rounded-full border ${
+            className={`px-5 py-2 rounded-full font-medium transition-all duration-200 ${
               activeFilter === filter.key
                 ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-800 hover:bg-gray-100'
+                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
             }`}
+            style={{
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none',
+            }}
           >
             {filter.label}
           </button>
         ))}
 
-        {/* ✅ Sort Dropdown */}
+        {/* Sort Dropdown */}
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
@@ -145,11 +148,10 @@ const Home = () => {
         </select>
       </div>
 
-      {/* ✅ Questions */}
+      {/* Questions */}
       <div className="mt-10 space-y-6 max-w-5xl mx-auto px-4">
         {paginatedQuestions.map((q) => (
           <div key={q.id} className="relative bg-white shadow-sm rounded-xl p-6 border border-gray-200">
-            {/* Answer count badge top-right */}
             <div className="absolute top-4 right-4 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
               {q.answers.length} {q.answers.length === 1 ? 'Answer' : 'Answers'}
             </div>
@@ -178,7 +180,7 @@ const Home = () => {
         )}
       </div>
 
-      {/* ✅ Pagination */}
+      {/* Pagination */}
       <div className="flex justify-center mt-10 gap-2">
         {Array.from({ length: totalPages }, (_, i) => (
           <button
@@ -195,7 +197,7 @@ const Home = () => {
         ))}
       </div>
 
-      {/* ✅ Welcome back section */}
+      {/* Welcome Back */}
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100 mt-10 max-w-5xl mx-auto">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -224,7 +226,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ✅ Floating Ask Button */}
+      {/* Floating Ask Button */}
       <Link
         to="/ask"
         className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition z-50"
