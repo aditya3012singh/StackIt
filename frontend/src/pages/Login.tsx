@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
-import { apiService } from "../services/api"; // Your API methods
+import { apiService } from "../services/api";
 import {
   Mail,
   Lock,
@@ -49,10 +49,19 @@ const Login: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
-    if (!email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Invalid email";
-    if (!password) newErrors.password = "Password is required";
-    else if (password.length < 6) newErrors.password = "Min 6 characters";
+
+    if (!email) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Please enter a valid email";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -67,16 +76,6 @@ const Login: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
       localStorage.setItem("token", data.jwt);
       localStorage.setItem("user", JSON.stringify(data.user));
       toast.success("Login successful");
-
-    // Simulate API call
-    setTimeout(() => {
-      // ✅ Store token so ProtectedRoute allows access
-      localStorage.setItem("token", "dummy-token");
-
-      // ✅ Optionally store user info
-      localStorage.setItem("user", JSON.stringify({ email }));
-
-      setIsLoading(false);
       navigate("/");
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Login failed");
@@ -89,6 +88,7 @@ const Login: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
     const redirectUri = encodeURIComponent("http://localhost:5173/oauth/callback");
     const url = `http://localhost:8000/api/v1/auth/oauth/${provider}?redirect_uri=${redirectUri}`;
     localStorage.setItem("postLoginRedirect", window.location.pathname);
+    console.log("Redirecting to:", url);
     window.location.href = url;
   };
 
@@ -240,7 +240,7 @@ const Login: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Social Login */}
+          {/* Social Buttons */}
           <div className="grid grid-cols-2 gap-3">
             <motion.button
               type="button"
