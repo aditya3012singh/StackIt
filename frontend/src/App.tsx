@@ -8,6 +8,8 @@ import AskQuestion from './pages/AskQuestion';
 import Question from './pages/Question';
 import Profile from './pages/Profile';
 import Chat from './pages/Chat';
+import ProtectedRoute from './components/ProtectedRoute';
+import Register from './pages/Register';
 
 function App() {
   return (
@@ -15,17 +17,24 @@ function App() {
       <Routes>
         <Route path="/landing" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/*" element={
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/ask" element={<AskQuestion />} />
-              <Route path="/question/:id" element={<Question />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/chat" element={<Chat />} />
-            </Routes>
-          </Layout>
-        } />
+        <Route path="/register" element={<Register />} />
+
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Routes>
+                  <Route path="/ask" element={<AskQuestion />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/chat" element={<Chat />} />
+                </Routes>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={<Home />} />
+        <Route path="/question/:id" element={<Question />} />
       </Routes>
     </Router>
   );
