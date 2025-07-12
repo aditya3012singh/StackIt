@@ -1,33 +1,63 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  Search, 
-  MessageSquare, 
-  User, 
-  Bell, 
-  Home, 
+import React, { useState, useRef, useEffect } from "react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import {
+  Search,
+  MessageSquare,
+  User,
+  Bell,
+  Home,
   Plus,
   Menu,
   X,
-  LogOut
-} from 'lucide-react';
-import Notifications from './Notifications';
-import { currentUser } from '../utils/data';
+  LogOut,
+} from "lucide-react";
+import Notifications from "./Notifications";
+import { currentUser } from "../utils/data";
 
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const Layout: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const isActive = (path: string) => location.pathname === path;
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/ask', label: 'Ask', icon: Plus },
-    { path: '/chat', label: 'Chat', icon: MessageSquare },
-    { path: '/profile', label: 'Profile', icon: User },
+    { path: "/", label: "Home", icon: Home },
+    { path: "/ask", label: "Ask", icon: Plus },
+    { path: "/chat", label: "Chat", icon: MessageSquare },
+    { path: "/profile", label: "Profile", icon: User },
   ];
+
+  const handleLogout = () => {
+    // Clear auth data here if needed
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(e.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -51,8 +81,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   to={path}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive(path)
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
                   <Icon size={18} />
@@ -64,8 +94,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {/* Right Side */}
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <div className="relative">
+              <div className="relative" ref={notificationsRef}>
                 <button
+                  aria-label="Toggle Notifications"
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors relative"
                 >
@@ -77,9 +108,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 )}
               </div>
 
-              {/* User Avatar */}
-              <div className="relative">
+              {/* User Avatar & Menu */}
+              <div className="relative" ref={userMenuRef}>
                 <button
+                  aria-label="Toggle User Menu"
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-100 transition-colors"
                 >
@@ -92,7 +124,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     {currentUser.username}
                   </span>
                 </button>
-                
+
                 {showUserMenu && (
                   <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                     <div className="p-2">
@@ -105,8 +137,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <span>Profile</span>
                       </Link>
                       <Link
-                        to="/"
-                        onClick={() => setShowUserMenu(false)}
+                        to="/login"
+                        onClick={() => handleLogout}
                         className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                       >
                         <LogOut size={16} />
@@ -117,7 +149,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 )}
               </div>
 
-              {/* Mobile menu button */}
+              {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -138,8 +170,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActive(path)
-                        ? 'bg-blue-50 text-blue-600'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     }`}
                   >
                     <Icon size={18} />
@@ -152,9 +184,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content with Outlet */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
+        <Outlet />
       </main>
     </div>
   );

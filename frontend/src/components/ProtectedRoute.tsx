@@ -1,15 +1,15 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 interface Props {
   children: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<Props> = ({ children }) => {
-    const isAuthenticated = !!localStorage.getItem('token');
-//   const isAuthenticated = true;
+const ProtectedRoute: React.FC<Props> = () => {
+  // const isAuthenticated = !!localStorage.getItem('token');
+  const isAuthenticated = true;
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;

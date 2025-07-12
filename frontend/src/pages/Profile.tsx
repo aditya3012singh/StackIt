@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { 
-  User, 
-  Calendar, 
-  Award, 
-  TrendingUp, 
-  MessageSquare, 
+import {
+  User,
+  Calendar,
+  Award,
+  TrendingUp,
+  MessageSquare,
   HelpCircle,
   Flame,
   Star,
-  Target
+  Target,
 } from 'lucide-react';
 import { currentUser, achievements, questions } from '../utils/data';
 
 const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'questions' | 'answers' | 'achievements'>('overview');
+  const [showEdit, setShowEdit] = useState(false);
 
-  const userQuestions = questions.filter(q => q.author.id === currentUser.id);
+  const userQuestions = questions.filter((q) => q.author.id === currentUser.id);
+  const userAnswers = currentUser.answers;
 
   const stats = [
     { label: 'Total XP', value: currentUser.xp, icon: Star, color: 'text-yellow-500' },
@@ -27,7 +29,7 @@ const Profile: React.FC = () => {
   const xpProgress = {
     current: currentUser.xp,
     nextLevel: 3000,
-    level: Math.floor(currentUser.xp / 1000) + 1
+    level: Math.floor(currentUser.xp / 1000) + 1,
   };
 
   const progressPercentage = ((xpProgress.current % 1000) / 1000) * 100;
@@ -49,7 +51,13 @@ const Profile: React.FC = () => {
               <p className="text-gray-600">{currentUser.email}</p>
               <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
                 <Calendar size={16} />
-                <span>Joined {new Date(currentUser.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</span>
+                <span>
+                  Joined{' '}
+                  {new Date(currentUser.joinDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                  })}
+                </span>
               </div>
             </div>
           </div>
@@ -59,10 +67,12 @@ const Profile: React.FC = () => {
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">Level {xpProgress.level}</span>
-                <span className="text-sm text-gray-500">{xpProgress.current} / {xpProgress.nextLevel} XP</span>
+                <span className="text-sm text-gray-500">
+                  {xpProgress.current} / {xpProgress.nextLevel} XP
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
@@ -72,6 +82,16 @@ const Profile: React.FC = () => {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Edit Profile Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowEdit(true)}
+            className="mt-4 text-sm text-blue-600 hover:underline"
+          >
+            Edit Profile
+          </button>
         </div>
       </div>
 
@@ -149,7 +169,7 @@ const Profile: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Performance Chart */}
+                {/* XP Growth Placeholder */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">XP Growth</h3>
                   <div className="bg-gray-50 rounded-lg p-4 h-48 flex items-center justify-center">
@@ -169,7 +189,10 @@ const Profile: React.FC = () => {
               </div>
               <div className="space-y-4">
                 {userQuestions.map((question) => (
-                  <div key={question.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                  <div
+                    key={question.id}
+                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  >
                     <h4 className="font-medium text-gray-900 mb-2">{question.title}</h4>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       <span>{question.votes} votes</span>
@@ -179,7 +202,10 @@ const Profile: React.FC = () => {
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {question.tags.map((tag) => (
-                        <span key={tag} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        <span
+                          key={tag}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        >
                           {tag}
                         </span>
                       ))}
@@ -195,11 +221,29 @@ const Profile: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Your Answers</h3>
-                <span className="text-sm text-gray-500">{currentUser.answersGiven} total</span>
+                <span className="text-sm text-gray-500">{userAnswers.length} total</span>
               </div>
-              <div className="text-center py-12">
-                <MessageSquare size={48} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">Your answers will appear here</p>
+              <div className="space-y-4">
+                {userAnswers.map((answer) => {
+                  const question = questions.find((q) => q.id === answer.questionId);
+                  return (
+                    <div
+                      key={answer.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <a
+                        href={`/question/${question?.id}`}
+                        className="text-blue-600 hover:underline text-sm font-medium"
+                      >
+                        {question?.title}
+                      </a>
+                      <p className="text-gray-800 mt-2 text-sm">{answer.content}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Answered on {new Date(answer.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -210,7 +254,7 @@ const Profile: React.FC = () => {
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Achievements</h3>
                 <span className="text-sm text-gray-500">
-                  {achievements.filter(a => a.earned).length} of {achievements.length} earned
+                  {achievements.filter((a) => a.earned).length} of {achievements.length} earned
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -226,7 +270,11 @@ const Profile: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{achievement.icon}</span>
                       <div>
-                        <h4 className={`font-medium ${achievement.earned ? 'text-green-900' : 'text-gray-500'}`}>
+                        <h4
+                          className={`font-medium ${
+                            achievement.earned ? 'text-green-900' : 'text-gray-500'
+                          }`}
+                        >
                           {achievement.name}
                         </h4>
                         {achievement.earned && achievement.earnedAt && (
@@ -236,7 +284,11 @@ const Profile: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    <p className={`text-sm ${achievement.earned ? 'text-green-700' : 'text-gray-500'}`}>
+                    <p
+                      className={`text-sm ${
+                        achievement.earned ? 'text-green-700' : 'text-gray-500'
+                      }`}
+                    >
                       {achievement.description}
                     </p>
                   </div>
@@ -246,6 +298,56 @@ const Profile: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEdit && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="bg-white rounded-lg w-full max-w-md p-6 relative">
+            <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
+            <form className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-700">Username</label>
+                <input
+                  type="text"
+                  defaultValue={currentUser.username}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-700">Email</label>
+                <input
+                  type="email"
+                  defaultValue={currentUser.email}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-700">Avatar URL</label>
+                <input
+                  type="text"
+                  defaultValue={currentUser.avatar}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  className="text-sm text-gray-600 hover:underline"
+                  onClick={() => setShowEdit(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white text-sm px-4 py-2 rounded-md"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

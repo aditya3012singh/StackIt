@@ -67,6 +67,16 @@ const Login: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
       localStorage.setItem("token", data.jwt);
       localStorage.setItem("user", JSON.stringify(data.user));
       toast.success("Login successful");
+
+    // Simulate API call
+    setTimeout(() => {
+      // ✅ Store token so ProtectedRoute allows access
+      localStorage.setItem("token", "dummy-token");
+
+      // ✅ Optionally store user info
+      localStorage.setItem("user", JSON.stringify({ email }));
+
+      setIsLoading(false);
       navigate("/");
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Login failed");

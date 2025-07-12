@@ -23,22 +23,16 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
 
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Routes>
-                  <Route path="/ask" element={<AskQuestion />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/chat" element={<Chat />} />
-                </Routes>
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/" element={<Home />} />
-        <Route path="/question/:id" element={<Question />} />
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/question/:id" element={<Question />} />
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/ask" element={<AskQuestion />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+        </Route>
       </Routes>
     </Router>
   );
