@@ -13,6 +13,8 @@ export function initSocket(server) {
     },
   });
 
+
+
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) return next(new Error("No token provided"));

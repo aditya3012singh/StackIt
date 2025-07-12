@@ -69,31 +69,45 @@ router.post("/verify-otp", async (req, res) => {
 router.post("/signup", async (req, res) => {
   try {
     const parsed = signupSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(403).json({ errors: parsed.error.errors });
+    if (!parsed.success)
+      return res.status(403).json({ errors: parsed.error.errors });
 
-    const { email: rawEmail, name, password, profileImage } = parsed.data;
+    const { email: rawEmail, name, password, profileImage, adminSecret } = parsed.data;
     const email = rawEmail.toLowerCase();
     const isVerified = await redis.get(`verified:${email}`);
+
     if (!isVerified) {
-      return res.status(403).json({ message: "Please verify your email via OTP before signing up." });
+      return res
+        .status(403)
+        .json({ message: "Please verify your email via OTP before signing up." });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) return res.status(409).json({ message: "User already exists" });
+    if (existingUser)
+      return res.status(409).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Determine role based on secret
+    const role = adminSecret === process.env.ADMIN_SECRET ? "ADMIN" : "USER";
+
     const user = await prisma.user.create({
       data: {
         email,
         name,
         password: hashedPassword,
-        profileImage
+        profileImage,
+        role, // ⬅️ include role
       },
     });
 
     await redis.del(`verified:${email}`);
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || "secret", { expiresIn: "1h" });
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET || "secret",
+      { expiresIn: "1h" }
+    );
 
     res.status(201).json({
       token,
@@ -101,7 +115,7 @@ router.post("/signup", async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
       },
     });
   } catch (e) {
@@ -109,6 +123,7 @@ router.post("/signup", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 router.post("/signin", async (req, res) => {
   try {
