@@ -87,8 +87,7 @@ router.post("/signup", async (req, res) => {
         email,
         name,
         password: hashedPassword,
-        profileImage,
-        emailVerified: true
+        profileImage
       },
     });
 

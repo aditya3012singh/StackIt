@@ -142,5 +142,42 @@ router.post("/:answerId/vote", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to vote" });
   }
 });
+// GET /answers/by-question/:questionId
+router.get("/by-question/:questionId", async (req, res) => {
+  const { questionId } = req.params;
+
+  try {
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+    });
+
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    const answers = await prisma.answer.findMany({
+      where: { questionId },
+      include: {
+        author: {
+          select: { id: true, name: true, profileImage: true }
+        },
+        votes: true,
+        comments: true
+      },
+    });
+
+    res.json({ answers });
+  } catch (error) {
+    console.error("Error fetching answers:", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+router.get("/debug-questions", async (req, res) => {
+  const questions = await prisma.question.findMany({
+    select: { id: true, title: true },
+  });
+  res.json({ questions });
+});
+
 
 export default router;

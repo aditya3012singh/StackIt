@@ -31,6 +31,50 @@ router.post("/:targetType/:targetId", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to create comment" });
   }
 });
+// 👇 Get all comments for a question
+router.get("/question/:questionId", async (req, res) => {
+  const { questionId } = req.params;
+
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { questionId },
+      include: {
+        author: {
+          select: { id: true, name: true, profileImage: true }
+        }
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    res.json({ comments });
+  } catch (error) {
+    console.error("Error fetching comments for question:", error);
+    res.status(500).json({ message: "Failed to fetch comments" });
+  }
+});
+
+// 👇 Get all comments for an answer
+router.get("/answer/:answerId", async (req, res) => {
+  const { answerId } = req.params;
+
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { answerId },
+      include: {
+        author: {
+          select: { id: true, name: true, profileImage: true }
+        }
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    res.json({ comments });
+  } catch (error) {
+    console.error("Error fetching comments for answer:", error);
+    res.status(500).json({ message: "Failed to fetch comments" });
+  }
+});
+
 
 // ✏️ Edit comment
 router.put("/:commentId", authMiddleware, async (req, res) => {
