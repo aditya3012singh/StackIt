@@ -25,8 +25,13 @@ const Login: React.FC = () => {
 
     // Simulate API call
     setTimeout(() => {
+      // ✅ Store token so ProtectedRoute allows access
+      localStorage.setItem("token", "dummy-token");
+
+      // ✅ Optionally store user info
+      localStorage.setItem("user", JSON.stringify({ email }));
+
       setIsLoading(false);
-      // Navigate to home page after successful login
       navigate("/");
     }, 1500);
   };
@@ -167,25 +172,23 @@ const Login: React.FC = () => {
             </div>
 
             {/* Remember Me & Forgot Password */}
-            { (
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-600">
-                    Remember me
-                  </span>
-                </label>
-                <a
-                  href="#"
-                  className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  Forgot password?
-                </a>
-              </div>
-            )}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-600">
+                  Remember me
+                </span>
+              </label>
+              <a
+                href="#"
+                className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Forgot password?
+              </a>
+            </div>
 
             {/* Submit Button */}
             <motion.button
