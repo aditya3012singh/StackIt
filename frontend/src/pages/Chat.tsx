@@ -1,26 +1,51 @@
 import React, { useState } from 'react';
-import { Send, Hash, Users, Search, Smile } from 'lucide-react';
+import { Send, Hash, Users, Search, Smile, PlusCircle, UserPlus, Share2, UserPlus2 } from 'lucide-react';
 import { chatRooms, chatMessages, currentUser } from '../utils/data';
 
 const Chat: React.FC = () => {
-  const [selectedRoom, setSelectedRoom] = useState(chatRooms[0]);
+  const [selectedRoom, setSelectedRoom] = useState(chatRooms[0] || null);
   const [message, setMessage] = useState('');
   const [showRoomList, setShowRoomList] = useState(false);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
-      // Handle message sending
       console.log('Sending message:', message);
       setMessage('');
     }
   };
 
+  const handleCreateGroup = () => {
+    if (newGroupName.trim()) {
+      const newRoom = {
+        id: Date.now().toString(),
+        name: newGroupName,
+        participants: 1,
+        lastMessage: null
+      };
+      chatRooms.push(newRoom);
+      setSelectedRoom(newRoom);
+      setNewGroupName('');
+      setIsCreatingGroup(false);
+    }
+  };
+
+  const handleCopyInviteLink = () => {
+    const inviteLink = `${window.location.origin}/invite/${selectedRoom?.id}`;
+    navigator.clipboard.writeText(inviteLink).then(() => {
+      setInviteLinkCopied(true);
+      setTimeout(() => setInviteLinkCopied(false), 2000);
+    });
+  };
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -31,7 +56,15 @@ const Chat: React.FC = () => {
         <div className={`w-80 border-r border-gray-200 flex flex-col ${showRoomList ? 'block' : 'hidden'} lg:block`}>
           {/* Sidebar Header */}
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Chat Rooms</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Chat Rooms</h2>
+              <button
+                onClick={() => setIsCreatingGroup(true)}
+                className="text-blue-600 hover:underline text-sm flex items-center gap-1"
+              >
+                <PlusCircle size={16} /> New
+              </button>
+            </div>
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
@@ -44,33 +77,36 @@ const Chat: React.FC = () => {
 
           {/* Room List */}
           <div className="flex-1 overflow-y-auto">
-            {chatRooms.map((room) => (
-              <button
-                key={room.id}
-                onClick={() => {
-                  setSelectedRoom(room);
-                  setShowRoomList(false);
-                }}
-                className={`w-full p-4 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 ${
-                  selectedRoom.id === room.id ? 'bg-blue-50 border-blue-200' : ''
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <Hash size={16} className="text-gray-500" />
-                  <span className="font-medium text-gray-900">{room.name}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Users size={14} />
-                  <span>{room.participants} members</span>
-                </div>
-                {room.lastMessage && (
-                  <p className="text-sm text-gray-600 mt-2 truncate">
-                    <span className="font-medium">{room.lastMessage.author.username}:</span>{' '}
-                    {room.lastMessage.content}
-                  </p>
-                )}
-              </button>
-            ))}
+            {chatRooms.length === 0 ? (
+              <div className="p-6 text-center text-gray-500 text-sm">No groups yet. Create one to start chatting!</div>
+            ) : (
+              chatRooms.map((room) => (
+                <button
+                  key={room.id}
+                  onClick={() => {
+                    setSelectedRoom(room);
+                    setShowRoomList(false);
+                  }}
+                  className={`w-full p-4 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 ${
+                    selectedRoom?.id === room.id ? 'bg-blue-50 border-blue-200' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <Hash size={16} className="text-gray-500" />
+                    <span className="font-medium text-gray-900">{room.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Users size={14} />
+                    <span>{room.participants} members</span>
+                  </div>
+                  {room.lastMessage && (
+                    <p className="text-sm text-gray-600 mt-2 truncate">
+                      <span className="font-medium">{room.lastMessage.author.username}:</span> {room.lastMessage.content}
+                    </p>
+                  )}
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -87,11 +123,24 @@ const Chat: React.FC = () => {
                   <Hash size={20} />
                 </button>
                 <Hash size={20} className="text-gray-600" />
-                <h3 className="text-lg font-semibold text-gray-900">{selectedRoom.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{selectedRoom?.name}</h3>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Users size={16} />
-                <span>{selectedRoom.participants} members</span>
+              <div className="flex items-center gap-3 text-sm text-gray-500">
+                <button
+                  onClick={handleCopyInviteLink}
+                  className="flex items-center gap-1 text-blue-600 hover:underline"
+                >
+                  <Share2 size={16} /> {inviteLinkCopied ? 'Link Copied!' : 'Share'}
+                </button>
+                <button
+                  className="flex items-center gap-1 text-green-600 hover:underline"
+                >
+                  <UserPlus2 size={16} /> Add Member
+                </button>
+                <div className="flex items-center gap-1">
+                  <Users size={16} />
+                  <span>{selectedRoom?.participants} members</span>
+                </div>
               </div>
             </div>
           </div>
@@ -130,7 +179,7 @@ const Chat: React.FC = () => {
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder={`Message #${selectedRoom.name}`}
+                    placeholder={`Message #${selectedRoom?.name}`}
                     rows={1}
                     className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none"
                     onKeyPress={(e) => {
@@ -162,6 +211,38 @@ const Chat: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Group creation modal */}
+      {isCreatingGroup && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <UserPlus size={20} /> Create New Group
+            </h2>
+            <input
+              type="text"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              placeholder="Enter group name..."
+              className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
+            <div className="flex justify-end mt-4 gap-2">
+              <button
+                onClick={() => setIsCreatingGroup(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-900"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateGroup}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
