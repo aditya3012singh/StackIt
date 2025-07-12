@@ -27,7 +27,7 @@ passport.use(
             data: {
               email,
               name: profile.displayName,
-              password: "", // Leave blank for OAuth users
+              password: "", // Empty for OAuth
               oauthProvider: "google",
               profileImage: profile.photos?.[0]?.value || null,
             },
@@ -55,7 +55,6 @@ passport.use(
       try {
         let email = profile.emails?.[0]?.value;
 
-        // If email is missing, fetch it from GitHub API
         if (!email) {
           const res = await axios.get("https://api.github.com/user/emails", {
             headers: {
@@ -64,10 +63,10 @@ passport.use(
             },
           });
 
-          const primaryEmail = res.data.find(
+          const primary = res.data.find(
             (emailObj) => emailObj.primary && emailObj.verified
           );
-          email = primaryEmail?.email;
+          email = primary?.email;
         }
 
         if (!email) return done(new Error("GitHub email not available"));
@@ -95,7 +94,7 @@ passport.use(
   )
 );
 
-// Session Handling
+// 🔹 Session (if needed — can be skipped for JWT-only apps)
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });

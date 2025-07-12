@@ -10,14 +10,18 @@ import Profile from './pages/Profile';
 import Chat from './pages/Chat';
 import ProtectedRoute from './components/ProtectedRoute';
 import Register from './pages/Register';
-
+import OAuthCallback from './pages/OAuthCallback'; // 👈 ADD THIS
+ 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/landing" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login isOpen={false} onClose={function (): void {
+          throw new Error('Function not implemented.');
+        } } />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
 
         <Route
           path="/*"

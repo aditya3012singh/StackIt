@@ -1,4 +1,5 @@
 export interface User {
+  role: string;
   id: string;
   username: string;
   email: string;
@@ -68,4 +69,12 @@ export interface ChatRoom {
   name: string;
   participants: number;
   lastMessage?: ChatMessage;
+}
+export interface AuthContextType {
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  setUser: (user: User | null) => void;
+  isLoading: boolean;
+  forceLogoutAndRedirect: () => void; // ✅ MUST be added
 }
