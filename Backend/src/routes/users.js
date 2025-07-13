@@ -106,7 +106,7 @@ router.post("/signup", async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET || "secret",
-      { expiresIn: "1h" }
+      { expiresIn: "10h" }
     );
 
     res.status(201).json({
@@ -142,7 +142,7 @@ router.post("/signin", async (req, res) => {
     const isPasswordValid = await bcrypt.compare(parsed.data.password, user.password);
     if (!isPasswordValid) return res.status(401).json({ message: "Incorrect password" });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || "secret", { expiresIn: "1h" });
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || "secret", { expiresIn: "10h" });
 
     const { password, ...userWithoutPassword } = user;
     res.json({ message: "Login successful", jwt: token, user: userWithoutPassword });

@@ -63,14 +63,23 @@ router.get("/:id", async (req, res) => {
         tags: true,
         answers: {
           include: {
-            author: true,
-            comments: true,
+            author: { select: { id: true, name: true } },
+            comments: {
+              include: {
+                author: { select: { id: true, name: true } },
+              },
+            },
             votes: true,
           },
         },
-        comments: true,
+        comments: {
+          include: {
+            author: { select: { id: true, name: true } },
+          },
+        },
       },
     });
+
 
     if (!question) return res.status(404).json({ message: "Not found" });
 

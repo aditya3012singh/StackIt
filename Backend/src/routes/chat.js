@@ -110,5 +110,23 @@ router.get("/rooms", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to get chat rooms" });
   }
 });
+router.post("/group", authMiddleware, async (req, res) => {
+  const { name, memberIds } = req.body;
+  const userId = req.user.id;
+
+  const room = await prisma.chatRoom.create({
+    data: {
+      name,
+      isGroup: true,
+      members: {
+        connect: [{ id: userId }, ...memberIds.map(id => ({ id }))],
+      },
+    },
+    include: { members: true },
+  });
+
+  res.json(room);
+});
+
 
 export default router;
