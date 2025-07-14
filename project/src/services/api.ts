@@ -122,17 +122,32 @@ export const adminApi = {
 };
 
 export const chatApi = {
-  getRooms: () => api.get<ChatRoom[]>("/chat/rooms"),
-  createRoom: (participantId: string) =>
-    api.post<ChatRoom>("/chat/room", { participantId }),
-  getMessages: (roomId: string) =>
-    api.get<ChatMessage[]>(`/chat/messages/${roomId}`),
-  sendMessage: (roomId: string, content: string) =>
-    api.post<ChatMessage>("/chat/message", { roomId, content }),
-  createGroup: (name: string, memberIds: string[]) =>
-    api.post("/chat/group", { name, memberIds }),
-  getUsers: () => api.get<User[]>("/users/all"),
+  getRooms: async () => {
+    const response = await api.get<ChatRoom[]>("/chat/rooms");
+    return response.data;
+  },
+  createRoom: async (participantId: string) => {
+    const response = await api.post<ChatRoom>("/chat/room", { participantId });
+    return response.data;
+  },
+  getMessages: async (roomId: string) => {
+    const response = await api.get<ChatMessage[]>(`/chat/messages/${roomId}`);
+    return response.data;
+  },
+  sendMessage: async (roomId: string, content: string) => {
+    const response = await api.post<ChatMessage>("/chat/message", { roomId, content });
+    return response.data;
+  },
+  createGroup: async (name: string, memberIds: string[]) => {
+    const response = await api.post("/chat/group", { name, memberIds });
+    return response.data;
+  },
+  getUsers: async () => {
+    const response = await api.get<User[]>("/users/all");
+    return response.data;
+  },
 };
+
 
 
 export default api;

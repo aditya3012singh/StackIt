@@ -10,7 +10,7 @@ export const SocketProvider = ({ children }) => {
     const token = localStorage.getItem("jwt");
     if (!token) return;
 
-    socketRef.current = io("http://localhost:4000", {
+    socketRef.current = io("http://localhost:8000", {
       auth: { token },
     });
 

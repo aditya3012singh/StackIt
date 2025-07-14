@@ -127,6 +127,28 @@ router.post("/group", authMiddleware, async (req, res) => {
 
   res.json(room);
 });
+// Add this to your chat routes file
+router.get("/users/all", authMiddleware, async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      where: {
+        id: {
+          not: req.user.id, // Exclude current user
+        },
+      },
+    });
+
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ message: "Failed to get users" });
+  }
+});
 
 
 export default router;

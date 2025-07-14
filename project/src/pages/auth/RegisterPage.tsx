@@ -2,20 +2,26 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, Mail, Lock, User, Github } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Github, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 interface RegisterForm {
   name: string;
   email: string;
   password: string;
   confirmPassword: string;
+  otp?: string;
 }
 
 const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<'form' | 'otp'>('form');
+  const [formData, setFormData] = useState<RegisterForm | null>(null);
+
   const { register: registerUser, loginWithProvider } = useAuth();
   const navigate = useNavigate();
 
@@ -28,20 +34,43 @@ const RegisterPage: React.FC = () => {
 
   const password = watch('password');
 
-  const onSubmit = async (data: RegisterForm) => {
+  const API_BASE = import.meta.env.VITE_REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+
+  const handleFormSubmit = async (data: RegisterForm) => {
     setLoading(true);
     try {
-      await registerUser(data.name, data.email, data.password);
+      await axios.post(`${API_BASE}/users/generate-otp`, { email: data.email });
+      setFormData(data);
+      setStep('otp');
+      toast.success('OTP sent to your email');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpSubmit = async (otpData: RegisterForm) => {
+    if (!formData) return;
+
+    setLoading(true);
+    try {
+      await axios.post(`${API_BASE}/users/verify-otp`, {
+        email: formData.email,
+        otp: otpData.otp
+      });
+
+      await registerUser(formData.name, formData.email, formData.password);
       navigate('/dashboard');
-    } catch (error) {
-      // Error handled in AuthContext
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'OTP verification failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center py-12 px-4">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -55,10 +84,14 @@ const RegisterPage: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mx-auto h-12 w-12 bg-emerald-500 rounded-full flex items-center justify-center"
           >
-            <User className="h-6 w-6 text-white" />
+            {step === 'form' ? (
+              <User className="h-6 w-6 text-white" />
+            ) : (
+              <ShieldCheck className="h-6 w-6 text-white" />
+            )}
           </motion.div>
           <h2 className="mt-6 text-center text-3xl font-bold text-white">
-            Create your account
+            {step === 'form' ? 'Create your account' : 'Verify OTP'}
           </h2>
           <p className="mt-2 text-center text-sm text-slate-400">
             Or{' '}
@@ -72,121 +105,140 @@ const RegisterPage: React.FC = () => {
         </div>
 
         <motion.form
+          onSubmit={handleSubmit(step === 'form' ? handleFormSubmit : handleOtpSubmit)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-8 space-y-6"
-          onSubmit={handleSubmit(onSubmit)}
         >
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-slate-300">
-                Full name
-              </label>
-              <div className="mt-1 relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-                <input
-                  {...register('name', {
-                    required: 'Name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'Name must be at least 2 characters'
-                    }
-                  })}
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="Enter your full name"
-                />
+          {step === 'form' ? (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-slate-300">
+                  Full name
+                </label>
+                <div className="mt-1 relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+                  <input
+                    {...register('name', {
+                      required: 'Name is required',
+                      minLength: {
+                        value: 2,
+                        message: 'Name must be at least 2 characters'
+                      }
+                    })}
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+                {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>}
               </div>
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>
-              )}
-            </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-300">
-                Email address
-              </label>
-              <div className="mt-1 relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-                <input
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^\S+@\S+$/i,
-                      message: 'Invalid email address'
-                    }
-                  })}
-                  type="email"
-                  className="block w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="Enter your email"
-                />
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+                  Email address
+                </label>
+                <div className="mt-1 relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+                  <input
+                    {...register('email', {
+                      required: 'Email is required',
+                      pattern: {
+                        value: /^\S+@\S+$/i,
+                        message: 'Invalid email address'
+                      }
+                    })}
+                    type="email"
+                    className="block w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Enter your email"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>
+                )}
               </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>
-              )}
-            </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300">
-                Password
-              </label>
-              <div className="mt-1 relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-                <input
-                  {...register('password', {
-                    required: 'Password is required',
-                    minLength: {
-                      value: 6,
-                      message: 'Password must be at least 6 characters'
-                    }
-                  })}
-                  type={showPassword ? 'text' : 'password'}
-                  className="block w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+                  Password
+                </label>
+                <div className="mt-1 relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+                  <input
+                    {...register('password', {
+                      required: 'Password is required',
+                      minLength: {
+                        value: 6,
+                        message: 'Password must be at least 6 characters'
+                      }
+                    })}
+                    type={showPassword ? 'text' : 'password'}
+                    className="block w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Create a password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-400">{errors.password.message}</p>
+                )}
               </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-400">{errors.password.message}</p>
-              )}
-            </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300">
-                Confirm password
-              </label>
-              <div className="mt-1 relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-                <input
-                  {...register('confirmPassword', {
-                    required: 'Please confirm your password',
-                    validate: value =>
-                      value === password || 'Passwords do not match'
-                  })}
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  className="block w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
-                >
-                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300">
+                  Confirm password
+                </label>
+                <div className="mt-1 relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+                  <input
+                    {...register('confirmPassword', {
+                      required: 'Please confirm your password',
+                      validate: value => value === password || 'Passwords do not match'
+                    })}
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    className="block w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-400">{errors.confirmPassword.message}</p>
+                )}
               </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-400">{errors.confirmPassword.message}</p>
+            </div>
+          ) : (
+            <div>
+              <label htmlFor="otp" className="block text-sm font-medium text-slate-300">
+                Enter the OTP sent to your email
+              </label>
+              <input
+                {...register('otp', { required: 'OTP is required' })}
+                type="text"
+                maxLength={6}
+                className="mt-1 block w-full py-3 px-4 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Enter OTP"
+              />
+              {errors.otp && (
+                <p className="mt-1 text-sm text-red-400">{errors.otp.message}</p>
               )}
             </div>
-          </div>
+          )}
 
           <div>
             <motion.button
@@ -196,10 +248,18 @@ const RegisterPage: React.FC = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading
+                ? step === 'form'
+                  ? 'Sending OTP...'
+                  : 'Verifying OTP...'
+                : step === 'form'
+                ? 'Send OTP'
+                : 'Verify & Register'}
             </motion.button>
           </div>
+        </motion.form>
 
+        {step === 'form' && (
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -251,7 +311,7 @@ const RegisterPage: React.FC = () => {
               </motion.button>
             </div>
           </div>
-        </motion.form>
+        )}
       </motion.div>
     </div>
   );

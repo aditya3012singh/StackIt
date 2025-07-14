@@ -5,16 +5,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const connectedUsers = new Map(); // socketId -> userId
 
-export function initSocket(server) {
-  const io = new Server(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-    },
-  });
-
-
-
+export function initSocket(io) {
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) return next(new Error("No token provided"));
@@ -22,16 +13,19 @@ export function initSocket(server) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
       socket.userId = decoded.id;
-      return next();
+      next();
     } catch (err) {
+      console.error("JWT verification failed:", err.message);
       return next(new Error("Authentication failed"));
     }
   });
 
   io.on("connection", (socket) => {
-    console.log("✅ New socket connection:", socket.id, socket.userId);
+    console.log("✅ New socket connected:", socket.id, "UserID:", socket.userId);
     connectedUsers.set(socket.id, socket.userId);
-    socket.join(socket.userId); // personal room
+
+    // Join personal room for direct messages/notifications
+    socket.join(socket.userId);
 
     socket.on("join-room", (roomId) => {
       socket.join(roomId);
@@ -67,10 +61,8 @@ export function initSocket(server) {
     });
 
     socket.on("disconnect", () => {
-      console.log(`❌ Disconnected: ${socket.id}`);
+      console.log(`❌ Socket disconnected: ${socket.id}`);
       connectedUsers.delete(socket.id);
     });
   });
-
-  return io;
 }

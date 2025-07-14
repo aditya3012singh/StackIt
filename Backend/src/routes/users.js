@@ -216,5 +216,27 @@ router.put("/update-profile", authMiddleware, async (req, res) => {
 router.get("/status", (req, res) => {
   res.send("✅ StackIt Auth API is live");
 });
+// Add this to your user routes file
+router.get("/all", authMiddleware, async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      where: {
+        id: {
+          not: req.user.id, // Exclude current user
+        },
+      },
+    });
+
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ message: "Failed to get users" });
+  }
+});
 
 export default router;

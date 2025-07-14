@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useRef, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import { ChatMessage, Notification } from '../types';
@@ -20,74 +20,100 @@ interface SocketProviderProps {
 }
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
+  const [isConnected, setIsConnected] = React.useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
       const token = localStorage.getItem('token');
       if (token) {
-        const newSocket = io(import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:8000', {
-          auth: { token }
+        console.log('🔌 Connecting to socket with token...');
+        
+        // Close existing connection if any
+        if (socketRef.current) {
+          socketRef.current.close();
+        }
+
+        socketRef.current = io('http://localhost:8000', {
+          auth: { token },
+          transports: ['websocket', 'polling'], // Allow fallback
+          timeout: 20000,
+          forceNew: true
         });
 
-        newSocket.on('connect', () => {
+        socketRef.current.on('connect', () => {
           setIsConnected(true);
-          console.log('Socket connected');
+          console.log('✅ Socket connected successfully');
         });
 
-        newSocket.on('disconnect', () => {
+        socketRef.current.on('disconnect', (reason) => {
           setIsConnected(false);
-          console.log('Socket disconnected');
+          console.log('❌ Socket disconnected:', reason);
         });
 
-        newSocket.on('notification', (notification: Notification) => {
+        socketRef.current.on('connect_error', (error) => {
+          console.error('❌ Socket connection error:', error);
+          setIsConnected(false);
+        });
+
+        socketRef.current.on('notification', (notification: Notification) => {
           toast.success(notification.content);
         });
 
-        setSocket(newSocket);
-
         return () => {
-          newSocket.close();
+          if (socketRef.current) {
+            console.log('🔌 Cleaning up socket connection');
+            socketRef.current.close();
+          }
         };
+      } else {
+        console.log('❌ No JWT token found');
       }
     } else {
-      if (socket) {
-        socket.close();
-        setSocket(null);
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
         setIsConnected(false);
       }
     }
   }, [user]);
 
   const joinRoom = (roomId: string) => {
-    if (socket) {
-      socket.emit('join-room', roomId);
+    if (socketRef.current && isConnected) {
+      socketRef.current.emit('join-room', roomId);
+      console.log(`🏠 Joining room: ${roomId}`);
+    } else {
+      console.log('❌ Cannot join room - socket not connected');
     }
   };
 
   const sendMessage = (roomId: string, content: string) => {
-    if (socket) {
-      socket.emit('send-message', { roomId, content });
+    if (socketRef.current && isConnected) {
+      socketRef.current.emit('send-message', { roomId, content });
+      console.log(`📤 Sending message to room ${roomId}:`, content);
+    } else {
+      console.log('❌ Cannot send message - socket not connected');
+      toast.error('Cannot send message - not connected');
     }
   };
 
   const onMessage = (callback: (message: ChatMessage) => void) => {
-    if (socket) {
-      socket.on('receive-message', callback);
+    if (socketRef.current) {
+      socketRef.current.on('receive-message', callback);
+      console.log('👂 Listening for messages');
     }
   };
 
   const onNotification = (callback: (notification: Notification) => void) => {
-    if (socket) {
-      socket.on('notification', callback);
+    if (socketRef.current) {
+      socketRef.current.on('notification', callback);
     }
   };
 
   return (
     <SocketContext.Provider value={{
-      socket,
+      socket: socketRef.current,
       isConnected,
       joinRoom,
       sendMessage,

@@ -76,7 +76,7 @@ export interface ChatRoom {
   isGroup: boolean;
   name?: string;
   members: User[];
-  messages: ChatMessage[];
+  messages?: ChatMessage[];
   createdAt: string;
 }
 
