@@ -9,18 +9,23 @@ const prisma = new PrismaClient();
 router.get("/", async (req, res) => {
   try {
     const tags = await prisma.tag.findMany({
-      include: {
-        questions: {
-          select: { id: true, title: true }
+      select: {
+        id: true,
+        name: true,
+        followers: true,
+        _count: {
+          select: { questions: true }
         }
       }
     });
+
     res.json({ tags });
   } catch (error) {
     console.error("Fetch tags error:", error);
     res.status(500).json({ message: "Failed to fetch tags" });
   }
 });
+
 
 // ➕ Create new tag (admin only)
 router.post("/", authMiddleware, isAdmin, async (req, res) => {
@@ -64,5 +69,24 @@ router.post("/assign/:qid", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to assign tags" });
   }
 });
+
+// POST /tags/:id/follow
+router.post("/:id/follow", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const updated = await prisma.tag.update({
+      where: { id },
+      data: {
+        followers: { increment: 1 }
+      }
+    });
+
+    res.json({ message: "Followed tag", tag: updated });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to follow tag" });
+  }
+});
+
 
 export default router;

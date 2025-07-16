@@ -65,10 +65,11 @@ export const votesApi = {
 
 // Tags API
 export const tagsApi = {
-  getAll: () => api.get<{ tags: Tag[] }>('/tags'),
   create: (name: string) => api.post<{ tag: Tag }>('/tags', { name }),
   assign: (questionId: string, tagIds: string[]) => 
     api.post(`/tags/assign/${questionId}`, { tagIds }),
+  getAll: () => api.get<{ tags: { id: string; name: string; followers: number; _count: { questions: number } }[] }>('/tags'),
+  follow: (tagId: string) => api.post(`/tags/${tagId}/follow`),
 };
 
 // Chat API
@@ -87,6 +88,9 @@ export const notificationsApi = {
   getAll: () => api.get<{ notifications: Notification[] }>('/notifications'),
   markAsRead: (id: string) => api.put(`/notifications/${id}/read`),
   markAllAsRead: () => api.put('/notifications/mark-all-read'),
+  // Add these to notificationsApi:
+delete: (id: string) => axios.delete(`/notifications/${id}`),
+clearRead: () => axios.delete('/notifications/clear-read')
 };
 
 // Search API

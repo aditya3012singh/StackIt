@@ -58,5 +58,33 @@ router.put("/mark-all-read", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to mark notifications." });
   }
 });
+// 🟠 Delete a single notification
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    await prisma.notification.delete({
+      where: { id: req.params.id },
+    });
+    res.status(200).json({ message: "Notification deleted" });
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    res.status(500).json({ message: "Failed to delete notification." });
+  }
+});
+
+// 🟠 Delete all read notifications
+router.delete("/clear-read", authMiddleware, async (req, res) => {
+  try {
+    await prisma.notification.deleteMany({
+      where: {
+        recipientId: req.user.id,
+        read: true,
+      },
+    });
+    res.status(200).json({ message: "All read notifications deleted" });
+  } catch (error) {
+    console.error("Error clearing read notifications:", error);
+    res.status(500).json({ message: "Failed to delete read notifications." });
+  }
+});
 
 export default router;

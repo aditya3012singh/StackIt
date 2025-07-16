@@ -58,9 +58,12 @@ export interface Vote {
 export interface Tag {
   id: string;
   name: string;
-  questions?: Question[];
+  followers: number;
+  _count?: {
+    questions: number;
+  };
+  questions?: Question[]; // Optional, in case included via `include`
 }
-
 export interface Notification {
   id: string;
   type: 'NEW_ANSWER' | 'NEW_COMMENT' | 'MENTION' | 'TAG_ADDED' | 'MESSAGE';

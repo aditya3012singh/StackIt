@@ -8,7 +8,7 @@ import Redis from "ioredis";
 import { loginSchema, signupSchema, updateProfileSchema, otpVerifySchema } from "../validators/validate.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { otpRateLimiter } from "../middlewares/rateLimiter.js";
-
+import  {upload}  from "../middlewares/s3uploader.js"; // path to your multer-S3 setup
 dotenv.config();
 
 const router = express.Router();
@@ -188,7 +188,11 @@ router.put("/update-profile", authMiddleware, async (req, res) => {
     const userId = req.user.id;
     const parsed = updateProfileSchema.safeParse(req.body);
 
-    if (!parsed.success) return res.status(400).json({ errors: parsed.error.errors });
+    if (!parsed.success) {
+      console.error("Zod validation failed:", parsed.error.format());
+      return res.status(400).json({ errors: parsed.error.errors });
+    }
+
 
     const { name, password, profileImage } = parsed.data;
     const updateData = {};
@@ -238,5 +242,20 @@ router.get("/all", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to get users" });
   }
 });
+// In your userRoutes.js or a new uploadRoutes.js
+
+
+router.post("/upload-profile", authMiddleware, upload.single("profileImage"), (req, res) => {
+  try {
+    if (!req.file || !req.file.location) {
+      return res.status(400).json({ message: "File upload failed" });
+    }
+    return res.status(200).json({ url: req.file.location });
+  } catch (error) {
+    console.error("Profile upload error:", error);
+    return res.status(500).json({ message: "Upload failed" });
+  }
+});
+
 
 export default router;

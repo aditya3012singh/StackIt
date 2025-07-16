@@ -51,14 +51,25 @@ export function initSocket(io) {
       }
     });
 
-    socket.on("notify", ({ recipientId, type, content, link }) => {
-      io.to(recipientId).emit("notification", {
-        type,
-        content,
-        link,
-        createdAt: new Date(),
-      });
+    socket.on("notify", async ({ recipientId, type, content, link }) => {
+      try {
+        const notification = await prisma.notification.create({
+          data: {
+            type,
+            content,
+            link,
+            recipientId,
+            read: false,
+          },
+        });
+
+        io.to(recipientId).emit("notification", notification);
+      } catch (error) {
+        console.error("Failed to save and emit notification", error);
+      }
     });
+
+
 
     socket.on("disconnect", () => {
       console.log(`❌ Socket disconnected: ${socket.id}`);

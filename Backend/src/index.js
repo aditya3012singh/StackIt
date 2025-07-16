@@ -34,7 +34,7 @@ const server = http.createServer(app);
 // ✅ Match CORS config in both Express and Socket.IO
 const corsOptions = {
   origin: process.env.CLIENT_URL || "http://localhost:5173",
-  methods: ["GET", "POST"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 };
 

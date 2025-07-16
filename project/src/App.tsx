@@ -21,6 +21,7 @@ import SettingsPage from './pages/SettingsPage';
 import TagsPage from './pages/TagsPage';
 import NotificationsPage from './pages/NotificationPage';
 import ChatPage from './pages/ChatPage';
+import ActivityPage from './pages/ActivityPge';
 
 function App() {
   return (
@@ -69,6 +70,7 @@ function App() {
                   <Route path='/tags' element={<TagsPage/>}/>
                   <Route path='/notifications' element={<NotificationsPage/>}/>
                   <Route path="/chat" element={<ChatPage/>} />
+                  <Route path="/activity" element={<ActivityPage/>}/>
 
                   <Route
                     path="/questions/ask"
