@@ -22,6 +22,7 @@ import TagsPage from './pages/TagsPage';
 import NotificationsPage from './pages/NotificationPage';
 import ChatPage from './pages/ChatPage';
 import ActivityPage from './pages/ActivityPge';
+import CodeMatedPage from './pages/CodeMatedPage';
 
 function App() {
   return (
@@ -71,6 +72,7 @@ function App() {
                   <Route path='/notifications' element={<NotificationsPage/>}/>
                   <Route path="/chat" element={<ChatPage/>} />
                   <Route path="/activity" element={<ActivityPage/>}/>
+                  <Route path="/codemated" element={<CodeMatedPage/>}/>
 
                   <Route
                     path="/questions/ask"

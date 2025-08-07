@@ -43,6 +43,18 @@ model User {
   chatMessages     ChatMessage[]
   chatRooms        ChatRoom[]      @relation("ChatParticipants")
   accounts         Account[]       // For OAuth
+  
+  // CodeMated Relations
+  questionProgress UserQuestionProgress[]
+  questionNotes    QuestionNote[]
+  questionDiscussions QuestionDiscussion[]
+  createdSyllabi   StudySyllabus[]
+  syllabusProgress UserSyllabusProgress[]
+  createdTeams     CodingTeam[]
+  teams            CodingTeam[]    @relation("TeamMembers")
+  teamChallenges   TeamChallenge[]
+  challengeParticipations TeamChallengeParticipant[]
+  contestReminders ContestReminder[]
 
   // XP / Streaks
   xp               Int             @default(0)
@@ -159,3 +171,173 @@ model ChatMessage {
   createdAt DateTime   @default(now())
 }
 
+// CodeMated Models
+model CodingQuestion {
+  id          String   @id @default(uuid())
+  title       String
+  platform    String   // LeetCode, Codeforces, HackerRank, etc.
+  difficulty  String   // Easy, Medium, Hard
+  topics      String[] // Arrays, Trees, Graphs, DP, etc.
+  url         String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userProgress UserQuestionProgress[]
+  notes        QuestionNote[]
+  discussions  QuestionDiscussion[]
+  syllabusQuestions SyllabusQuestion[]
+}
+
+model UserQuestionProgress {
+  id           String        @id @default(uuid())
+  user         User          @relation(fields: [userId], references: [id])
+  userId       String
+  question     CodingQuestion @relation(fields: [questionId], references: [id])
+  questionId   String
+  status       String        // Not Started, In Progress, Completed, Need Revision
+  timeSpent    Int?          // in minutes
+  completedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  @@unique([userId, questionId])
+}
+
+model QuestionNote {
+  id         String         @id @default(uuid())
+  content    String
+  author     User           @relation(fields: [authorId], references: [id])
+  authorId   String
+  question   CodingQuestion @relation(fields: [questionId], references: [id])
+  questionId String
+  isPublic   Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+model QuestionDiscussion {
+  id         String         @id @default(uuid())
+  content    String
+  author     User           @relation(fields: [authorId], references: [id])
+  authorId   String
+  question   CodingQuestion @relation(fields: [questionId], references: [id])
+  questionId String
+  parentId   String?        // For nested comments
+  parent     QuestionDiscussion? @relation("DiscussionReplies", fields: [parentId], references: [id])
+  replies    QuestionDiscussion[] @relation("DiscussionReplies")
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+model StudySyllabus {
+  id               String   @id @default(uuid())
+  name             String
+  description      String
+  totalQuestions   Int      @default(0)
+  isPublic         Boolean  @default(false)
+  creator          User     @relation(fields: [creatorId], references: [id])
+  creatorId        String
+  topics           String[] // Arrays, Trees, Graphs, etc.
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  userProgress     UserSyllabusProgress[]
+  questions        SyllabusQuestion[]
+}
+
+model SyllabusQuestion {
+  id         String         @id @default(uuid())
+  syllabus   StudySyllabus  @relation(fields: [syllabusId], references: [id])
+  syllabusId String
+  question   CodingQuestion @relation(fields: [questionId], references: [id])
+  questionId String
+  order      Int            @default(0)
+  createdAt  DateTime       @default(now())
+  
+  @@unique([syllabusId, questionId])
+}
+
+model UserSyllabusProgress {
+  id               String        @id @default(uuid())
+  user             User          @relation(fields: [userId], references: [id])
+  userId           String
+  syllabus         StudySyllabus @relation(fields: [syllabusId], references: [id])
+  syllabusId       String
+  completedQuestions Int         @default(0)
+  startedAt        DateTime      @default(now())
+  lastAccessedAt   DateTime      @default(now())
+  
+  @@unique([userId, syllabusId])
+}
+
+model CodingTeam {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isPublic    Boolean  @default(false)
+  creator     User     @relation(fields: [creatorId], references: [id])
+  creatorId   String
+  members     User[]   @relation("TeamMembers")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  challenges  TeamChallenge[]
+}
+
+model TeamChallenge {
+  id          String      @id @default(uuid())
+  title       String
+  description String
+  team        CodingTeam  @relation(fields: [teamId], references: [id])
+  teamId      String
+  creator     User        @relation(fields: [creatorId], references: [id])
+  creatorId   String
+  deadline    DateTime?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  
+  // Relations
+  participants TeamChallengeParticipant[]
+}
+
+model TeamChallengeParticipant {
+  id          String        @id @default(uuid())
+  challenge   TeamChallenge @relation(fields: [challengeId], references: [id])
+  challengeId String
+  user        User          @relation(fields: [userId], references: [id])
+  userId      String
+  score       Int           @default(0)
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+  
+  @@unique([challengeId, userId])
+}
+
+model Contest {
+  id        String   @id @default(uuid())
+  name      String
+  platform  String   // Codeforces, LeetCode, AtCoder, etc.
+  startTime DateTime
+  duration  String   // e.g., "2h 30m"
+  url       String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  reminders ContestReminder[]
+}
+
+model ContestReminder {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  contest   Contest  @relation(fields: [contestId], references: [id])
+  contestId String
+  reminded  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, contestId])
+}

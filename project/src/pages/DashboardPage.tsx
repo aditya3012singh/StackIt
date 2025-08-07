@@ -17,6 +17,7 @@ import {
   Trophy,
   Activity,
   ArrowRight,
+  Code2,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { activityApi, tagsApi } from '../services/api';
@@ -234,6 +235,19 @@ const DashboardPage: React.FC = () => {
                 >
                   <MessageSquare className="h-5 w-5 mr-2" />
                   Browse Questions
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Link 
+                  to="/codemated" 
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-purple-500/25"
+                >
+                  <Code2 className="h-5 w-5 mr-2" />
+                  Practice DSA
                 </Link>
               </motion.div>
             </motion.div>

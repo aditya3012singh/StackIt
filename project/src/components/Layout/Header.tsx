@@ -12,6 +12,7 @@ import {
   X,
   HelpCircle,
   Zap,
+  Code2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -174,6 +175,16 @@ const Header: React.FC = () => {
                   className="p-2.5 text-slate-400 hover:text-white transition-all duration-300 hover:bg-slate-800/50 rounded-xl group"
                 >
                   <MessageCircle className="h-5 w-5 group-hover:animate-pulse" />
+                </motion.button>
+
+                {/* CodeMated */}
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate('/codemated')}
+                  className="p-2.5 text-slate-400 hover:text-white transition-all duration-300 hover:bg-slate-800/50 rounded-xl group"
+                >
+                  <Code2 className="h-5 w-5 group-hover:animate-pulse" />
                 </motion.button>
 
                 {/* XP Display */}
